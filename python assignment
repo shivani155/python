@@ -1,0 +1,50 @@
+import pandas as pd
+import random
+
+def roll_dice():
+    """Simulates rolling a dice."""
+    return random.randint(1, 6)
+
+def move_player(player_data, steps, board_size):
+    """Moves a player's token on the board."""
+    current_position = player_data['position']
+    new_position = current_position + steps
+    if new_position >= board_size:
+        new_position = board_size - 1 # Prevent moving past the end
+        player_data['finished'] = True
+    player_data['position'] = new_position
+    return player_data
+
+def play_ludo(num_players=4, board_size=30):
+    """Simulates a simplified Ludo race game."""
+    players = pd.DataFrame({
+        'player_id': range(num_players),
+        'position': [0] * num_players,
+        'finished': [False] * num_players,
+        'color': ['red', 'green', 'blue', 'yellow'][:num_players]
+    })
+
+    game_over = False
+    turn = 0
+
+    while not game_over:
+        current_player_id = turn % num_players
+        current_player = players.loc[current_player_id]
+
+        if not current_player['finished']:
+            dice_roll = roll_dice()
+            print(f"Player {current_player_id + 1} ({current_player['color']}) rolls a {dice_roll}")
+
+            players.loc[current_player_id] = move_player(current_player.to_dict(), dice_roll, board_size)
+
+            print(f"Player {current_player_id + 1} is now at position {players.loc[current_player_id, 'position']}")
+
+        if all(players['finished']):
+            game_over = True
+            winner = players[players['position'] == board_size - 1].iloc[0]
+            print(f"Player {winner['player_id'] + 1} ({winner['color']}) wins!")
+
+        turn += 1
+
+#Run the game
+play_ludo()
